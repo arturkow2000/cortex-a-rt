@@ -1,0 +1,21 @@
+[package]
+authors = ["Jorge Aparicio <jorge@japaric.io>"]
+categories = ["embedded", "no-std"]
+description = "Attributes re-exported in `cortex-a-rt`"
+documentation = "https://docs.rs/cortex-a-rt"
+keywords = ["arm", "cortex-a", "runtime", "startup"]
+license = "MIT OR Apache-2.0"
+name = "cortex-a-rt-macros"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0"
+proc-macro2 = "1.0"
+
+[dependencies.syn]
+features = ["extra-traits", "full"]
+version = "1.0"
