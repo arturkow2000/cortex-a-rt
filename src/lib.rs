@@ -29,14 +29,51 @@ global_asm! {
 global_asm! {
     r#"
     .section .except, "ax"
+    # This macro saves all registers and calls exception handler. Upon exit it
+    # restores context to resume execution.
+    # Should not be called from FIQ mode as it assumes r8-r12 are not banked.
+    .macro excp_handle, mode, correction, handler
+        .if \correction
+        sub lr, #\correction
+        .endif
+
+        # Save all non-banked registers, LR is the address where exception
+        # occurred (was PC before exception entry)
+        push {{r0-r12, lr}}
+        mrs r0, spsr
+        push {{r0}}
+
+        # FIXME: assumes exception occurred in SVC mode and will give wrong register
+        # readings when that is not the case.
+        cps #0x13
+        mov r0, lr
+        mov r1, sp
+        cps #\mode
+        push {{r0, r1}}
+
+        mov r0, sp
+        tst sp, #4
+        subeq sp, #4 @ align stack
+        push {{r0}}
+
+        bl \handler
+
+        # Restore context, handler must either modify frame to ensure execution
+        # can resume correctly or never return.
+
+        pop {{r0}}
+        mov sp, r0
+        ldmfd sp!, {{r0-r12, pc}}^
+    .endm
+
     __cortex_a_excp_undefined:
-        b .
+        excp_handle 0x1b, 0, __cortex_a_undefined_handler
     __cortex_a_excp_syscall:
         b .
     __cortex_a_excp_prefetch_abort:
-        b .
+        excp_handle 0x17, 4, __cortex_a_prefetch_abort
     __cortex_a_excp_data_abort:
-        b .
+        excp_handle 0x17, 4, __cortex_a_data_abort
     __cortex_a_excp_reserved:
         b .
     __cortex_a_excp_irq:
@@ -114,4 +151,5 @@ global_asm! {
 #[cfg(feature = "single-core-critical-section")]
 mod critical_section;
 
+pub mod exceptions;
 pub mod interrupt;
