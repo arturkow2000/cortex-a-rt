@@ -153,3 +153,4 @@ mod critical_section;
 
 pub mod exceptions;
 pub mod interrupt;
+mod util;

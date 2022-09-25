@@ -10,6 +10,7 @@ edition = "2021"
 
 [features]
 single-core-critical-section = ["dep:critical-section"]
+defmt = ["dep:defmt"]
 
 [dependencies]
 cortex-a-rt-macros = { path = "macros" }
@@ -18,3 +19,7 @@ cortex-a-rt-macros = { path = "macros" }
 version = "1"
 optional = true
 features = ["restore-state-u8"]
+
+[dependencies.defmt]
+version = "0.3"
+optional = true
