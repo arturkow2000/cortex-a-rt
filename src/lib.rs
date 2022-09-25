@@ -1,4 +1,5 @@
 #![cfg_attr(not(test), no_std)]
+#![cfg_attr(feature = "panic_handler", feature(panic_info_message))]
 
 extern crate cortex_a_rt_macros as macros;
 
@@ -153,4 +154,6 @@ mod critical_section;
 
 pub mod exceptions;
 pub mod interrupt;
+#[cfg(feature = "panic_handler")]
+mod panic;
 mod util;

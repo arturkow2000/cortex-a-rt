@@ -11,6 +11,7 @@ edition = "2021"
 [features]
 single-core-critical-section = ["dep:critical-section"]
 defmt = ["dep:defmt"]
+panic_handler = []
 
 [dependencies]
 cortex-a-rt-macros = { path = "macros" }
