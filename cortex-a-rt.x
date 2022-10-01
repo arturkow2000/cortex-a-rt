@@ -42,6 +42,8 @@ SECTIONS
 
   PROVIDE(_stext = ADDR(.vectors) + SIZEOF(.vectors));
 
+  PROVIDE(__cortex_a_rt_platform_halt = __cortex_a_rt_platform_halt_default);
+
   /* ### .text */
   .text _stext :
   {

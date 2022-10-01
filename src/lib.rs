@@ -6,7 +6,7 @@ extern crate cortex_a_rt_macros as macros;
 #[allow(unused_imports)]
 use core::arch::global_asm;
 
-pub use macros::entry;
+pub use macros::*;
 
 #[cfg(armv7a)]
 global_asm! {
@@ -153,6 +153,7 @@ global_asm! {
 mod critical_section;
 
 pub mod exceptions;
+mod halt;
 pub mod interrupt;
 #[cfg(feature = "panic_handler")]
 mod panic;

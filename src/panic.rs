@@ -1,5 +1,9 @@
 use core::{fmt::Arguments, panic::PanicInfo};
 
+extern "C" {
+    fn __cortex_a_rt_platform_halt() -> !;
+}
+
 #[panic_handler]
 fn handler(info: &PanicInfo) -> ! {
     #[cfg(feature = "defmt")]
@@ -29,7 +33,5 @@ fn handler(info: &PanicInfo) -> ! {
         }
     }
 
-    // TODO: we could use platform specific procedures to halt or reset the
-    // platform
-    loop {}
+    unsafe { __cortex_a_rt_platform_halt() };
 }
