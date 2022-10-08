@@ -10,7 +10,7 @@ fn handler(info: &PanicInfo) -> ! {
     {
         defmt::error!("=== KERNEL PANIC ===");
         if let Some(location) = info.location() {
-            defmt::error!(" @ {}:{}", location.file(), location.column());
+            defmt::error!(" @ {}:{}", location.file(), location.line());
         } else {
             defmt::error!(" <location unknown>");
         }
