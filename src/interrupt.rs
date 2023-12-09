@@ -1,9 +1,5 @@
 #[allow(unused_imports)]
 use core::arch::asm;
-use core::{
-    mem::transmute,
-    sync::atomic::{AtomicUsize, Ordering},
-};
 
 /// Enable IRQs and FIQs on calling CPU.
 ///
@@ -80,19 +76,4 @@ pub fn is_fiq_enabled() -> bool {
     }
     #[cfg(not(armv7a))]
     unimplemented!()
-}
-
-static IRQ_HANDLER: AtomicUsize = AtomicUsize::new(0);
-
-#[no_mangle]
-extern "C" fn __cortex_a_irq_handler() {
-    let handler = IRQ_HANDLER.load(Ordering::Relaxed);
-    if handler != 0 {
-        let handler = unsafe { transmute::<_, fn()>(handler) };
-        handler();
-    }
-}
-
-pub fn install_irq_handler(handler: fn()) {
-    IRQ_HANDLER.store(handler as usize, Ordering::Relaxed);
 }

@@ -50,6 +50,7 @@ SECTIONS
     __stext = .;
     *(.init1);
     *(.except)
+    *(.weak_default)
 
     *(.text .text.*);
 

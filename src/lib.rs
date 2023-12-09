@@ -93,6 +93,13 @@ global_asm! {
         ldmfd sp!, {{r0-r12, pc}}^
     __cortex_a_excp_fiq:
         b .
+
+    .section .weak_default, "ax"
+    .weak __cortex_a_irq_handler
+    .type __cortex_a_irq_handler, #function
+    __cortex_a_irq_handler:
+        bx lr
+    .size __cortex_a_irq_handler, . - __cortex_a_irq_handler
     "#
 }
 
