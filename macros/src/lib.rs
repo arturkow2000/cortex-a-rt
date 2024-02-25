@@ -10,7 +10,7 @@ use quote::quote;
 use std::collections::HashSet;
 use syn::{
     parse, parse_macro_input, spanned::Spanned, AttrStyle, Attribute, FnArg, Ident, Item, ItemFn,
-    ItemStatic, LitStr, ReturnType, Stmt, Type, Visibility,
+    ItemStatic, LitStr, ReturnType, Stmt, Type, TypeTuple, Visibility,
 };
 
 #[proc_macro_attribute]
@@ -156,6 +156,58 @@ pub fn halt(args: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
+#[proc_macro_attribute]
+pub fn interrupt_handler(args: TokenStream, input: TokenStream) -> TokenStream {
+    let mut f = parse_macro_input!(input as ItemFn);
+    // check the function signature
+    let valid_signature = f.sig.constness.is_none()
+        && f.sig.abi.is_none()
+        && f.sig.inputs.is_empty()
+        && f.sig.generics.params.is_empty()
+        && f.sig.generics.where_clause.is_none()
+        && f.sig.variadic.is_none()
+        && match f.sig.output {
+            ReturnType::Default => true,
+            ReturnType::Type(_, ref ty) => match &**ty {
+                Type::Tuple(TypeTuple {
+                    paren_token: _,
+                    elems,
+                }) if elems.is_empty() => true,
+                _ => false,
+            },
+        };
+
+    if !valid_signature {
+        return parse::Error::new(
+            f.span(),
+            "`#[interrupt_handler]` function must have signature `[unsafe] fn() -> ()`",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    if !args.is_empty() {
+        return parse::Error::new(Span::call_site(), "This attribute accepts no arguments")
+            .to_compile_error()
+            .into();
+    }
+
+    if let Err(error) = check_attr_whitelist(&f.attrs, WhiteListCaller::InterruptHandler) {
+        return error;
+    }
+
+    f.sig.abi = Some(syn::Abi {
+        extern_token: Default::default(),
+        name: Some(LitStr::new("C", Span::call_site())),
+    });
+
+    quote!(
+        #[export_name = "__cortex_a_irq_handler"]
+        #f
+    )
+    .into()
+}
+
 /// Extracts `static mut` vars from the beginning of the given statements
 fn extract_static_muts(
     stmts: impl IntoIterator<Item = Stmt>,
@@ -212,6 +264,7 @@ fn extract_cfgs(attrs: Vec<Attribute>) -> (Vec<Attribute>, Vec<Attribute>) {
 enum WhiteListCaller {
     Entry,
     Halt,
+    InterruptHandler,
 }
 
 fn check_attr_whitelist(attrs: &[Attribute], caller: WhiteListCaller) -> Result<(), TokenStream> {
@@ -237,6 +290,9 @@ fn check_attr_whitelist(attrs: &[Attribute], caller: WhiteListCaller) -> Result<
         let err_str = match caller {
             WhiteListCaller::Entry => "this attribute is not allowed on a cortex-a-rt entry point",
             WhiteListCaller::Halt => "this attribute is not allowed on a cortex-a-rt halt function",
+            WhiteListCaller::InterruptHandler => {
+                "this attribute is not allowed on a cortex-a-rt interrupt handler function"
+            }
         };
 
         return Err(parse::Error::new(attr.span(), &err_str)
