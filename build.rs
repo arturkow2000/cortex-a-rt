@@ -1,6 +1,8 @@
 use std::{env, path::Path};
 
 fn main() {
+    println!("cargo::rustc-check-cfg=cfg(armv7a)");
+
     let target = env::var("TARGET").unwrap();
     if target.starts_with("armv7a-none") {
         println!("cargo:rustc-cfg=armv7a");
