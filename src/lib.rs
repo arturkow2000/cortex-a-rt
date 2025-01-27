@@ -1,5 +1,4 @@
 #![cfg_attr(not(test), no_std)]
-#![cfg_attr(feature = "panic_handler", feature(panic_info_message))]
 
 extern crate cortex_a_rt_macros as macros;
 
