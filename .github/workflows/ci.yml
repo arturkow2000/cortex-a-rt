@@ -1,0 +1,50 @@
+name: CI
+on:
+  merge_group:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  style:
+    name: code style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - uses: ./.github/workflows/taplo
+      - name: Rust code style
+        run: cargo fmt --check
+      - name: TOML files style
+        run: taplo fmt --check
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        target: [armv7a-none-eabi]
+        features:
+          - args:
+            description: No features
+          - args: --features=single-core-critical-section
+            description: Critical section for unicore systems
+          - args: --features=panic_handler
+            description: With panic handler
+          - args: --features=defmt
+            description: defmt support
+          - args: --features=panic_handler,defmt
+            description: Panic handler with defmt
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.target }} on ${{ matrix.os }} (${{ matrix.features.description }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+          targets: ${{ matrix.target }}
+          components: clippy
+      - name: Build
+        run: cargo clippy --target=${{ matrix.target }} ${{ matrix.features.args }} -- -D warnings
