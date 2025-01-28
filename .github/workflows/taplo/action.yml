@@ -1,0 +1,85 @@
+name: taplo cli
+description: Install Taplo CLI tools
+author: Artur Kowalski
+branding:
+  icon: activity
+  color: purple
+inputs:
+  version:
+    description: Taplo version to install
+    required: false
+    default: latest
+  variant:
+    description: Taplo variant to install (can be "default" or "full")
+    required: false
+    default: default
+runs:
+  using: composite
+  steps:
+    - id: select-package
+      name: Determine binary package URL
+      shell: bash
+      env:
+        baseurl: https://github.com/tamasfe/taplo/releases/${{inputs.version}}/download
+        _variant: ${{inputs.variant}}
+      run: |
+        if [[ ${{runner.os}} == Linux ]]; then
+          os=linux
+          ext=gz
+        elif [[ ${{runner.os}} == macOS ]]; then
+          os=darwin
+          ext=gz
+        elif [[ ${{runner.os}} == Windows ]]; then
+          os=windows
+          ext=zip
+        else
+          echo Unsupported OS "${{runner.os}}"
+          exit 1
+        fi
+
+        if [[ ${{runner.arch}} == X86 ]]; then
+          arch=x86
+        elif [[ ${{runner.arch}} == X64 ]]; then
+          arch=x86_64
+        elif [[ ${{runner.arch}} == ARM64 ]]; then
+          arch=aarch64
+        else
+          echo Unsupported arch "${{runner.arch}}"
+        fi
+
+        if [[ $_variant == default ]]; then
+          variant=""
+        else
+          variant="$_variant-"
+        fi
+
+        filename="taplo-$variant$os-$arch.$ext"
+        url="$baseurl/$filename"
+        echo "filename=$filename" >> $GITHUB_ENV
+        echo "url=$url" >> $GITHUB_ENV
+    - id: download-package
+      name: Download binary package
+      shell: bash
+      run: |
+        curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused \
+          --location --silent --show-error --fail --output "${{runner.temp}}/$filename" \
+          "$url"
+    - id: install-package-windows
+      name: Install Taplo package
+      shell: pwsh
+      if: runner.os == 'Windows'
+      run: |
+        $install_dir="$env:USERPROFILE\taplo"
+        New-Item -ItemType Directory -Path $install_dir
+        Expand-Archive -DestinationPath $install_dir -Path ${{runner.temp}}\$env:filename
+        echo "$install_dir" >> $env:GITHUB_PATH
+    - id: install-package
+      name: Install Taplo package
+      shell: bash
+      if: runner.os != 'Windows'
+      run: |
+        install_dir="$HOME/.local/taplo"
+        mkdir -p "$install_dir"
+        gunzip -c "${{runner.temp}}/$filename" > "$install_dir/taplo"
+        chmod +x "$install_dir/taplo"
+        echo "$install_dir" >> $GITHUB_PATH
