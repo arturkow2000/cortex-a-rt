@@ -13,6 +13,17 @@ single-core-critical-section = ["dep:critical-section"]
 defmt = ["dep:defmt"]
 log = ["dep:log"]
 panic_handler = []
+unwind = ["dep:unwinding"]
+
+[dependencies.unwinding]
+path = "external/unwinding"
+optional = true
+default-features = false
+features = [
+    "unwinder",
+    "fde-static"
+]
+
 
 [dependencies]
 cortex-a-rt-macros = { path = "macros" }

@@ -120,6 +120,7 @@ global_asm! {
     r#"
     .section .init1, "ax"
     __cortex_a_init:
+    .cfi_startproc
         # TODO: need to handle secure monitor and HYP modes
         cpsid if, #0x13
         ldr r0, =__cortex_a_rt_reset
@@ -165,6 +166,8 @@ global_asm! {
         2:
         bl main
         udf #0
+    .cfi_endproc
+    .size __cortex_a_init, . - __cortex_a_init
     "#
 }
 
@@ -175,5 +178,5 @@ pub mod exceptions;
 mod halt;
 pub mod interrupt;
 #[cfg(feature = "panic_handler")]
-mod panic;
+pub mod panic;
 mod util;

@@ -72,6 +72,24 @@ SECTIONS
     __erodata = .;
   }
 
+  .ARM.exidx : ALIGN(4)
+  {
+    . = ALIGN(4);
+    __exidx_start = .;
+    *(.ARM.exidx);
+    *(.ARM.exidx.*);
+    . = ALIGN(4);
+    __exidx_end = .;
+  } :rload
+
+  .ARM.extab : ALIGN(4)
+  {
+    . = ALIGN(4);
+    __extab_start = .;
+    *(.ARM.extab.*);
+    __extab_end = .;
+  } :rload
+
   /* ## Sections in RAM */
   /* ### .data */
   .data : ALIGN(4)
@@ -121,15 +139,6 @@ SECTIONS
   .got (NOLOAD) :
   {
     KEEP(*(.got .got.*));
-  }
-
-  /* ## Discarded sections */
-  /DISCARD/ :
-  {
-    /* Unused exception related info that only wastes space */
-    *(.ARM.exidx);
-    *(.ARM.exidx.*);
-    *(.ARM.extab.*);
   }
 }
 
