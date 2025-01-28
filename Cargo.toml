@@ -11,6 +11,7 @@ edition = "2021"
 [features]
 single-core-critical-section = ["dep:critical-section"]
 defmt = ["dep:defmt"]
+log = ["dep:log"]
 panic_handler = []
 
 [dependencies]
@@ -23,4 +24,8 @@ features = ["restore-state-u8"]
 
 [dependencies.defmt]
 version = "0.3"
+optional = true
+
+[dependencies.log]
+version = "0.4"
 optional = true

@@ -43,6 +43,10 @@ jobs:
             description: defmt support
           - args: --features=panic_handler,defmt
             description: Panic handler with defmt
+          - args: --features=log
+            description: log crate support
+          - args: --features=panic_handler,log
+            description: Panic handler with log crate
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.target }} on ${{ matrix.os }} (${{ matrix.features.description }})
     steps:

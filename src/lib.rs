@@ -1,5 +1,18 @@
 #![cfg_attr(not(test), no_std)]
 
+#[cfg(feature = "defmt")]
+#[allow(unused_imports)]
+#[macro_use(error)]
+extern crate defmt;
+
+#[cfg(feature = "log")]
+#[allow(unused_imports)]
+#[macro_use(error)]
+extern crate log;
+
+#[cfg(all(feature = "defmt", feature = "log"))]
+compile_error!("enable either \"defmt\" or \"log\" but not both");
+
 extern crate cortex_a_rt_macros as macros;
 
 #[allow(unused_imports)]
