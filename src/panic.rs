@@ -6,20 +6,20 @@ extern "C" {
 
 #[panic_handler]
 fn handler(info: &PanicInfo) -> ! {
-    #[cfg(feature = "defmt")]
+    #[cfg(any(feature = "defmt", feature = "log"))]
     {
-        defmt::error!("=== KERNEL PANIC ===");
+        error!("=== KERNEL PANIC ===");
         if let Some(location) = info.location() {
-            defmt::error!(" @ {}:{}", location.file(), location.line());
+            error!(" @ {}:{}", location.file(), location.line());
         } else {
-            defmt::error!(" <location unknown>");
+            error!(" <location unknown>");
         }
 
         if let Some(message) = info.message().as_str() {
-            defmt::error!("Message: {}", message);
+            error!("Message: {}", message);
         }
     }
-    #[cfg(not(feature = "defmt"))]
+    #[cfg(not(any(feature = "defmt", feature = "log")))]
     {
         let _ = info;
     }
