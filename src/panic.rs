@@ -19,6 +19,10 @@ fn handler(info: &PanicInfo) -> ! {
             defmt::error!("Message: {}", message);
         }
     }
+    #[cfg(not(feature = "defmt"))]
+    {
+        let _ = info;
+    }
 
     unsafe { __cortex_a_rt_platform_halt() };
 }
