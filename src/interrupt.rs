@@ -60,7 +60,7 @@ pub fn is_irq_enabled() -> bool {
     {
         let mut flags: u32;
         unsafe { asm!("mrs {}, cpsr", out(reg) flags, options(nostack, nomem)) };
-        flags & 1 << 7 == 0
+        flags & (1 << 7) == 0
     }
     #[cfg(not(armv7a))]
     unimplemented!()
@@ -72,7 +72,7 @@ pub fn is_fiq_enabled() -> bool {
     {
         let mut flags: u32;
         unsafe { asm!("mrs {}, cpsr", out(reg) flags, options(nostack, nomem)) };
-        flags & 1 << 6 == 0
+        flags & (1 << 6) == 0
     }
     #[cfg(not(armv7a))]
     unimplemented!()
