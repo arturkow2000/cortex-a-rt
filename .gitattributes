@@ -1,0 +1,4 @@
+# Force checkout with LF endings because of
+# https://github.com/tamasfe/taplo/issues/623
+# Rust will handle this, most IDEs will too.
+*.toml  text eol=lf
